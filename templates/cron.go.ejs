@@ -13,5 +13,5 @@ func test(ctx context.Context) {
 }
 
 func init() {
-	cronx.AddCronTask(ctx, "*/10 * * * * *", test, 0)
+	cronx.AddCronTask("*/10 * * * * *", test, 0)
 }
