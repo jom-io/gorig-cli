@@ -1,0 +1,62 @@
+package <%= moduleName %>
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jom-io/gorig/apix"
+	"github.com/jom-io/gorig/global/consts"
+	"<%= projectName %>/domain/<%= moduleName %>/api/req"
+)
+
+func Page<%= ModuleName %>(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	pageReq, e := apix.GetPageReq(ctx)
+	filter := &req.<%= ModuleName %>Req{}
+	e = apix.BindParams(ctx, filter)
+	if e != nil {
+		return
+	}
+	result, err := gService.Page<%= ModuleName %>(ctx, pageReq, filter)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, &result, err)
+}
+
+func List<%= ModuleName %>(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	filter := &req.<%= ModuleName %>Req{}
+	e := apix.BindParams(ctx, filter)
+	if e != nil {
+		return
+	}
+	result, err := gService.List<%= ModuleName %>(ctx, filter)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, &result, err)
+}
+
+func Save<%= ModuleName %>(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	<%= moduleName %>Req := &req.<%= ModuleName %>Req{}
+	e := apix.BindParams(ctx, <%= moduleName %>Req)
+	if e != nil {
+		return
+	}
+	err := gService.Save<%= ModuleName %>(ctx, <%= moduleName %>Req)
+	apix.HandleData(ctx, consts.CurdUpdateFailCode, nil, err)
+}
+
+func Get<%= ModuleName %>(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	id, e := apix.GetParamInt64(ctx, "id", apix.Force)
+	if e != nil {
+		return
+	}
+	result, err := gService.Get<%= ModuleName %>(ctx, id)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, &result, err)
+}
+
+func Delete<%= ModuleName %>(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	id, e := apix.GetParamInt64(ctx, "id", apix.Force)
+	if e != nil {
+		return
+	}
+	err := gService.Delete<%= ModuleName %>(ctx, id)
+	apix.HandleData(ctx, consts.CurdUpdateFailCode, nil, err)
+}

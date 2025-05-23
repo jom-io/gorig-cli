@@ -1,0 +1,7 @@
+package model
+
+type <%= moduleName.charAt(0).toUpperCase() + moduleName.slice(1) %>D struct {
+    UserID   int64  `gorm:"column:user_id;type:bigint(20);comment:user_id" json:"userID" form:"userID"`
+    FiledStr string `gorm:"column:fieldStr;type:varchar(255);comment:fieldStr" json:"fieldStr" form:"fieldStr"`
+    FieldInt int64  `gorm:"column:fieldInt;type:bigint(20);comment:fieldInt" json:"fieldInt" form:"fieldInt"`
+}

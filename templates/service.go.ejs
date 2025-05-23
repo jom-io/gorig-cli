@@ -1,0 +1,93 @@
+package <%= moduleName %>
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jom-io/gorig/apix/load"
+	"github.com/jom-io/gorig/domainx"
+	"github.com/jom-io/gorig/httpx"
+	"github.com/jom-io/gorig/utils/errors"
+	"github.com/jom-io/gorig/utils/logger"
+	"go.uber.org/zap"
+	"<%= projectName %>/domain/<%= moduleName %>/api/req"
+	"<%= projectName %>/domain/<%= moduleName %>/internal"
+)
+
+var gService = &service{}
+
+type service struct {
+}
+
+func (s service) Save<%= ModuleName %>(ctx *gin.Context, req *req.<%= ModuleName %>Req) *errors.Error {
+	logger.Info(ctx, "Save<%= ModuleName %>", zap.Any("req", req))
+	<%= moduleName %>M := internal.<%= ModuleName %>()
+	if req.ID > 0 {
+		get<%= ModuleName %> := internal.<%= ModuleName %>()
+		if e := domainx.MustGetByID(get<%= ModuleName %>.Con, req.ID, get<%= ModuleName %>); e != nil {
+			return e
+		}
+		<%= moduleName %>M.ID = get<%= ModuleName %>.ID
+		<%= moduleName %>M.Options = get<%= ModuleName %>.Options
+	}
+	<%= moduleName %>M.ParseReq(req)
+	if _, e := domainx.Save(<%= moduleName %>M.Con, <%= moduleName %>M, 0); e != nil {
+		return e
+	}
+	return nil
+}
+
+func (s service) Page<%= ModuleName %>(ctx *gin.Context, pageReq *load.Page, filter *req.<%= ModuleName %>Req) (*load.PageResp, *errors.Error) {
+	logger.Info(ctx, "Page<%= ModuleName %>", zap.Any("pageReq", pageReq), zap.Any("filter", filter))
+	if filter == nil {
+		return nil, errors.Verify("参数错误")
+	}
+	query := domainx.Matches{}
+	query.Eq("user_id", httpx.GetUserIDInt64(ctx))
+	<%= moduleName %>Resp := new(load.PageResp)
+	<%= moduleName %> := internal.<%= ModuleName %>()
+	list := &[]internal.<%= ModuleName %>M{}
+	if e := domainx.FindByPageMatch(<%= moduleName %>.Con, query, pageReq, <%= moduleName %>Resp, list); e != nil {
+		return nil, e
+	}
+	<%= moduleName %>Resp.Result = <%= moduleName %>.ToRespList(list)
+	return <%= moduleName %>Resp, nil
+}
+
+func (s service) List<%= ModuleName %>(ctx *gin.Context, filter *req.<%= ModuleName %>Req) ([]*req.<%= ModuleName %>Resp, *errors.Error) {
+	logger.Info(ctx, "List<%= ModuleName %>", zap.Any("filter", filter))
+	if filter == nil {
+		return nil, errors.Verify("参数错误")
+	}
+	query := domainx.Matches{}
+	query.Eq("user_id", httpx.GetUserIDInt64(ctx))
+	<%= moduleName %> := internal.<%= ModuleName %>()
+	list := &[]internal.<%= ModuleName %>M{}
+	if e := domainx.FindByMatch(<%= moduleName %>.Con, query, list); e != nil {
+		return nil, e
+	}
+	return <%= moduleName %>.ToRespList(list), nil
+}
+
+func (s service) Get<%= ModuleName %>(ctx *gin.Context, id int64) (*req.<%= ModuleName %>Resp, *errors.Error) {
+	logger.Info(ctx, "Get<%= ModuleName %>", zap.Any("id", id))
+	<%= moduleName %>M := internal.<%= ModuleName %>()
+	if e := domainx.MustGetByID(<%= moduleName %>M.Con, id, <%= moduleName %>M); e != nil {
+		return nil, e
+	}
+	return <%= moduleName %>M.ToResp(), nil
+}
+
+func (s service) Delete<%= ModuleName %>(ctx *gin.Context, id int64) *errors.Error {
+	logger.Info(ctx, "Delete<%= ModuleName %>", zap.Any("id", id))
+	<%= moduleName %>M := internal.<%= ModuleName %>()
+	if e := domainx.MustGetByID(<%= moduleName %>M.Con, id, <%= moduleName %>M); e != nil {
+		return e
+	}
+	if e := domainx.Delete(<%= moduleName %>M.Con, <%= moduleName %>M); e != nil {
+		return e
+	}
+	return nil
+}
+
+func init() {
+	setService(gService)
+}

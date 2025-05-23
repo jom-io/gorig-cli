@@ -1,0 +1,14 @@
+package global
+
+import (
+	configure "github.com/jom-io/gorig/utils/cofigure"
+)
+
+var (
+	DBDef    = "def"
+	SysName  = ""
+)
+
+func init() {
+	SysName = configure.GetString("sys.name", "TEST")
+}

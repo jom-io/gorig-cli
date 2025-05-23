@@ -1,0 +1,18 @@
+package <%= moduleName %>
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jom-io/gorig/httpx"
+)
+
+func init() {
+	httpx.RegisterRouter(func(groupRouter *gin.RouterGroup) {
+		<%= moduleName %> := groupRouter.Group("<%= moduleName %>")
+		//<%= moduleName %>.Use(mid.SignMP())
+		<%= moduleName %>.GET("page", Page<%= ModuleName %>)
+		<%= moduleName %>.GET("list", List<%= ModuleName %>)
+		<%= moduleName %>.POST("save", Save<%= ModuleName %>)
+		<%= moduleName %>.GET("info", Get<%= ModuleName %>)
+		<%= moduleName %>.DELETE("delete", Delete<%= ModuleName %>)
+	})
+}

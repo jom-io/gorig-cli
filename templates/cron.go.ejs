@@ -1,0 +1,17 @@
+package cron
+
+import (
+	"context"
+	"fmt"
+	"github.com/jom-io/gorig/cronx"
+	"github.com/jom-io/gorig/utils/logger"
+	"time"
+)
+
+func test(ctx context.Context) {
+	logger.Info(ctx, fmt.Sprintf("hello, now is %s", time.Now().Format("2006-01-02 15:04:05")))
+}
+
+func init() {
+	cronx.AddCronTask(ctx, "*/10 * * * * *", test, 0)
+}

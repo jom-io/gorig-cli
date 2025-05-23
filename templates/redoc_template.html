@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>API Documentation</title>
+    <!-- Include ReDoc CDN -->
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <style>
+      body { 
+        margin: 0; 
+        padding: 0; 
+        font-family: Arial, sans-serif; 
+        background-color: #f9f9f9; 
+        color: #333; 
+      }
+      #header { 
+        padding: 15px; 
+        background-color: #007bff; 
+        position: fixed; 
+        top: 0; 
+        width: 100%; 
+        z-index: 1000; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+      }
+      #header label { 
+        color: white; 
+        font-weight: bold; 
+      }
+      #spec-selector { 
+        padding: 8px; 
+        font-size: 16px; 
+        border: none; 
+        border-radius: 4px; 
+        margin-left: 10px; 
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
+      }
+      #view-source, #go-home { 
+        margin-left: 10px; 
+        cursor: pointer; 
+        color: white; 
+        text-decoration: underline; 
+        font-weight: bold; 
+      }
+      #redoc-container { 
+        height: calc(100vh - 70px); 
+        margin-top: 70px; 
+        padding: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <label for="spec-selector">Select API Documentation: </label>
+      <select id="spec-selector">
+        <option value="">-- Select API --</option>
+        {{API_OPTIONS}}
+      </select>
+      <span id="view-source">View Source Data</span>
+      <span id="go-home" class="view-source">All List</span>
+    </div>
+    <div id="redoc-container">
+      <!-- ReDoc will render here -->
+    </div>
+    <script>
+      const selector = document.getElementById('spec-selector');
+      const container = document.getElementById('redoc-container');
+      const viewSource = document.getElementById('view-source');
+      const goHome = document.getElementById('go-home');
+
+      // Default select the first document
+      selector.selectedIndex = 1;
+      const defaultSpecUrl = selector.value;
+      if (defaultSpecUrl) {
+        // Render the default API documentation using ReDoc
+        Redoc.init(defaultSpecUrl, { scrollYOffset: 50 }, container);
+      }
+
+      selector.addEventListener('change', function() {
+        const specUrl = this.value;
+        if (specUrl) {
+          // Clear existing ReDoc rendering
+          container.innerHTML = '';
+          // Render the new API documentation using ReDoc
+          Redoc.init(specUrl, { scrollYOffset: 50 }, container);
+        }
+      });
+
+      viewSource.addEventListener('click', function() {
+        const specUrl = selector.value;
+        if (specUrl) {
+          // Redirect to the corresponding API source data
+          window.location.href = specUrl.replace('.json', '.json');  // Assuming source data is in JSON format
+        }
+      });
+
+      goHome.addEventListener('click', function() {
+        window.location.href = '/';
+      });
+    </script>
+  </body>
+</html>

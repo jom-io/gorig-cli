@@ -1,0 +1,49 @@
+package internal
+
+import (
+	"github.com/jom-io/gorig/domainx"
+    "github.com/jom-io/gorig/global/variable"
+    "<%= projectName %>/domain/<%= moduleName %>/api/req"
+	"<%= projectName %>/domain/<%= moduleName %>/model"
+	"<%= projectName %>/global"
+)
+
+func <%= ModuleName %>() *<%= ModuleName %>M {
+	return &<%= ModuleName %>M{Complex: domainx.UseComplex[model.<%= ModuleName %>D](domainx.Mysql, global.DBDef, "<%= moduleName %>")}
+}
+
+type <%= ModuleName %>M struct {
+	*domainx.Complex[model.<%= ModuleName %>D]
+}
+
+func (u *<%= ModuleName %>M) TableName() string {
+	return variable.TBPrefix +"<%= moduleName %>"
+}
+
+func init() {
+	domainx.AutoMigrate(func() (value domainx.ConTable) {
+		return <%= ModuleName %>()
+	})
+}
+
+func (u *<%= ModuleName %>M) ParseReq(req *req.<%= ModuleName %>Req) {
+	u.Data = &req.<%= ModuleName %>D
+}
+
+func (u *<%= ModuleName %>M) ToResp() *req.<%= ModuleName %>Resp {
+	if u.Data == nil {
+		return nil
+	}
+	return &req.<%= ModuleName %>Resp{
+		ID:      u.ID,
+		<%= ModuleName %>D: *u.Data,
+	}
+}
+
+func (u *<%= ModuleName %>M) ToRespList(list *[]<%= ModuleName %>M) []*req.<%= ModuleName %>Resp {
+	respList := make([]*req.<%= ModuleName %>Resp, 0)
+	for _, v := range *list {
+		respList = append(respList, v.ToResp())
+	}
+	return respList
+}
