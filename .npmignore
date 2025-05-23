@@ -1,1 +1,10 @@
 npm_publish.sh
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# 其他不需要发布的文件
+node_modules/
+*.log
