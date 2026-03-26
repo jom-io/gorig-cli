@@ -1,6 +1,6 @@
 {
   "name": "gorig-cli",
-  "version": "1.0.18",
+  "version": "1.0.21",
   "type": "module",
   "description": "gorig build tool",
   "main": "bin/cli.js",
