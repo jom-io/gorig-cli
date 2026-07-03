@@ -1,0 +1,71 @@
+package <%= moduleName %>
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jom-io/gorig/apix"
+	"github.com/jom-io/gorig/global/consts"
+)
+
+func CreateHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	req := &CreateReq{}
+	if err := apix.BindParams(ctx, req); err != nil {
+		return
+	}
+	id, err := Create(ctx, req)
+	apix.HandleData(ctx, consts.CurdUpdateFailCode, id, err)
+}
+
+func InfoHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	id, err := apix.GetParamInt64(ctx, "id", apix.Force)
+	if err != nil {
+		return
+	}
+	resp, serviceErr := Info(ctx, id)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, resp, serviceErr)
+}
+
+func ListHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	req := &QueryReq{}
+	if err := apix.BindParams(ctx, req); err != nil {
+		return
+	}
+	resp, serviceErr := List(ctx, req)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, resp, serviceErr)
+}
+
+func PageHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	pageReq, err := apix.GetPageReq(ctx)
+	if err != nil {
+		return
+	}
+	req := &QueryReq{}
+	if err = apix.BindParams(ctx, req); err != nil {
+		return
+	}
+	resp, serviceErr := Page(ctx, req, pageReq)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, resp, serviceErr)
+}
+
+func UpdateHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	req := &UpdateReq{}
+	if err := apix.BindParams(ctx, req); err != nil {
+		return
+	}
+	err := Update(ctx, req)
+	apix.HandleData(ctx, consts.CurdUpdateFailCode, nil, err)
+}
+
+func DeleteHTTP(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+	id, err := apix.GetParamInt64(ctx, "id", apix.Force)
+	if err != nil {
+		return
+	}
+	serviceErr := Delete(ctx, id)
+	apix.HandleData(ctx, consts.CurdUpdateFailCode, nil, serviceErr)
+}

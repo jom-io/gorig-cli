@@ -3,63 +3,60 @@
 # 确保脚本有执行权限
 # chmod +x npm_publish.sh
 
-# 设置官方源地址和原仓库源地址
+set -u
+
 NPM_OFFICIAL_REGISTRY="https://registry.npmjs.org/"
-CUSTOM_REGISTRY=$(npm config get registry)
+ORIGINAL_REGISTRY="$(npm config get registry)"
+TEMP_NPMRC=""
 
-# 检查原始仓库源是否为官方源
-if [ "$CUSTOM_REGISTRY" = "$NPM_OFFICIAL_REGISTRY" ]; then
-    echo "当前已经是官方源，不需要切换。"
+cleanup() {
+    if [ -n "$TEMP_NPMRC" ] && [ -f "$TEMP_NPMRC" ]; then
+        rm -f "$TEMP_NPMRC"
+    fi
+}
+trap cleanup EXIT
+
+echo "当前 npm registry: $ORIGINAL_REGISTRY"
+
+if [ "$ORIGINAL_REGISTRY" != "$NPM_OFFICIAL_REGISTRY" ]; then
+    echo "提示：当前不是官方源，发布时将临时使用官方源（不会修改全局配置）。"
+fi
+
+PUBLISH_ARGS=(publish --registry "$NPM_OFFICIAL_REGISTRY")
+
+if [ -n "${NPM_TOKEN:-}" ]; then
+    echo "检测到 NPM_TOKEN，使用 token 进行非交互发布。"
+    TEMP_NPMRC="$(mktemp)"
+    printf "//registry.npmjs.org/:_authToken=%s\n" "$NPM_TOKEN" > "$TEMP_NPMRC"
+    PUBLISH_ARGS+=(--userconfig "$TEMP_NPMRC")
 else
-    echo "当前仓库源为: $CUSTOM_REGISTRY"
-    echo "正在切换为官方源: $NPM_OFFICIAL_REGISTRY"
-    npm config set registry $NPM_OFFICIAL_REGISTRY
+    echo "未检测到 NPM_TOKEN，将使用当前登录态发布。"
+    echo "当前账号：$(npm whoami 2>/dev/null || echo "未登录")"
+    echo "是否先执行 npm login？（建议在账号切换或未登录时选择 y）"
+    read -r -p "[y/n]: " NEED_LOGIN
+
+    if [ "$NEED_LOGIN" = "y" ] || [ "$NEED_LOGIN" = "Y" ]; then
+        npm login --registry "$NPM_OFFICIAL_REGISTRY" || {
+            echo "npm 登录失败。"
+            exit 1
+        }
+    fi
+
+    echo "如你的 npm 账号发布需要 OTP，请输入 6 位验证码；不需要请直接回车。"
+    read -r -p "OTP: " OTP_CODE
+    if [ -n "$OTP_CODE" ]; then
+        PUBLISH_ARGS+=(--otp "$OTP_CODE")
+    fi
 fi
 
-# 验证是否成功切换到官方源
-CURRENT_REGISTRY=$(npm config get registry)
-if [ "$CURRENT_REGISTRY" = "$NPM_OFFICIAL_REGISTRY" ]; then
-    echo "仓库源已成功切换为官方源。"
-else
-    echo "切换仓库源失败，请检查。"
-    exit 1
+echo "开始执行：npm ${PUBLISH_ARGS[*]}"
+npm "${PUBLISH_ARGS[@]}"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "发布失败，请检查上方日志。"
+    echo "若报 2FA/token 相关错误，请使用带 bypass 2fa 的 granular token。"
+    exit $EXIT_CODE
 fi
 
-# 登录 npm 账户
-echo "开始登录 npm，请根据提示输入用户名、密码和邮箱地址。"
-npm login
-if [ $? -ne 0 ]; then
-    echo "npm 登录失败，请检查用户名、密码和邮箱是否正确。"
-    exit 1
-fi
-
-# 执行 yarn publish 或 npm publish
-echo "请选择使用 yarn 还是 npm 发布包（输入 y 表示使用 yarn，输入 n 表示使用 npm）："
-read -p "[y/n]: " CHOICE
-
-if [ "$CHOICE" = "y" ]; then
-    yarn publish
-elif [ "$CHOICE" = "n" ]; then
-    npm publish
-else
-    echo "无效输入，请重新运行脚本并选择 y 或 n。"
-    exit 1
-fi
-
-if [ $? -ne 0 ]; then
-    echo "发布失败，请检查日志。"
-    exit 1
-else
-    echo "发布成功！"
-fi
-
-# 恢复原始仓库源
-if [ "$CUSTOM_REGISTRY" != "$NPM_OFFICIAL_REGISTRY" ]; then
-    echo "正在恢复原始仓库源: $CUSTOM_REGISTRY"
-    npm config set registry $CUSTOM_REGISTRY
-    echo "仓库源已恢复为: $(npm config get registry)"
-else
-    echo "仓库源保持为官方源，无需恢复。"
-fi
-
-echo "脚本执行完成。"
+echo "发布成功！"

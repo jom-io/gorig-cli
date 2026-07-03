@@ -1,0 +1,7 @@
+sys:
+  name: GORIG_SKILL_FRAMEWORK_API_CHECK
+  mode: local
+
+api:
+  rest:
+    addr: :0

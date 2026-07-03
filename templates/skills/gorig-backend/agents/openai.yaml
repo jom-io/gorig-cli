@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gorig Backend"
+  short_description: "Version-aware Gorig backend development and deployment"
+  default_prompt: "Use $gorig-backend to inspect the target project's Gorig version, plan the requested backend change, implement it with verified framework APIs, and validate the resulting behavior."

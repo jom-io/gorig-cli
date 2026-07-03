@@ -1,0 +1,60 @@
+# <%= ModuleName %> API
+
+Persistent CRUD HTTP API backed by <%= dbTitle %>.
+
+## POST /<%= moduleName %>/create
+
+Request:
+
+```json
+{
+  "name": "demo",
+  "status": "enabled",
+  "remark": "optional"
+}
+```
+
+Response data: created numeric ID.
+
+## GET /<%= moduleName %>/info
+
+Query:
+
+| Name | Required | Description |
+|---|---|---|
+| id | yes | Record ID |
+
+## GET /<%= moduleName %>/list
+
+Optional filters: `name`, `status`.
+
+## GET /<%= moduleName %>/page
+
+Optional filters: `name`, `status`, `page`, `size`, `lastID`.
+
+## POST /<%= moduleName %>/update
+
+Request:
+
+```json
+{
+  "id": 1,
+  "name": "new name",
+  "status": "disabled",
+  "remark": "updated"
+}
+```
+
+## DELETE /<%= moduleName %>/delete
+
+Query:
+
+| Name | Required | Description |
+|---|---|---|
+| id | yes | Record ID |
+
+## Error cases
+
+- `400`: missing ID, missing name, invalid status, or no update fields
+- `404`: record not found
+- `409`: name already exists

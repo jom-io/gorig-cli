@@ -1,0 +1,65 @@
+# Gorig runtime state
+.cache/
+.logs/
+logs/
+tmp/
+temp/
+.deploy/
+tokens.json
+*.log
+*.jsonl
+
+# Build and test output
+bin/
+dist/
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+coverage.html
+*.prof
+cpu.out
+mem.out
+trace.out
+
+# Local secrets and machine-specific overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+_bin/*secret*.yaml
+_bin/*private*.yaml
+_bin/*override*.yaml
+_bin/*.local.yaml
+
+# Go local workspace/cache
+go.work
+go.work.sum
+.gocache/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.DS_Store
+Thumbs.db
+
+# Optional local data dumps
+data_smoke/
+test/output/
+*.sqlite
+*.sqlite3
+*.db
+

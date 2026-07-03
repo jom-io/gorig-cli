@@ -1,0 +1,16 @@
+package <%= moduleName %>
+
+import "<%= projectName %>/domain/<%= moduleName %>/model"
+
+type EchoReq struct {
+	Message string `json:"message" form:"message"`
+}
+
+type InfoResp struct {
+	Item    model.D `json:"item"`
+	Message string  `json:"message"`
+}
+
+type EchoResp struct {
+	Message string `json:"message"`
+}

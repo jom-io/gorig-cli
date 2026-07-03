@@ -422,15 +422,26 @@ const generateOpenAPIDocs = async (moduleName = null) => {
 
         for (const module of modulesToProcess) {
             const modulePath = path.join(domainDir, module);
-            const routerFilePath = path.join(modulePath, 'api/router.go');
-            const controllerFilePath = path.join(modulePath, 'api/controller.go');
+            const flatRouterFilePath = path.join(modulePath, 'router.go');
+            const flatControllerFilePath = path.join(modulePath, 'controller.go');
+            const legacyRouterFilePath = path.join(modulePath, 'api/router.go');
+            const legacyControllerFilePath = path.join(modulePath, 'api/controller.go');
+            const routerFilePath = await fs.pathExists(flatRouterFilePath) ? flatRouterFilePath : legacyRouterFilePath;
+            const controllerFilePath = await fs.pathExists(flatControllerFilePath) ? flatControllerFilePath : legacyControllerFilePath;
             const modelFilePath = path.join(modulePath, 'model', `${module}.go`);
+            const dtoFilePath = path.join(modulePath, 'dto.go');
             const reqFilePath = path.join(modulePath, 'api', 'req', 'req.go');
 
             // 检查文件是否存在
-            if (!(await fs.pathExists(routerFilePath)) || !(await fs.pathExists(controllerFilePath)) || !(await fs.pathExists(modelFilePath)) || !(await fs.pathExists(reqFilePath))) {
+            if (!(await fs.pathExists(routerFilePath)) || !(await fs.pathExists(controllerFilePath)) || !(await fs.pathExists(modelFilePath))) {
                 console.warn(chalk.yellow(`Module "${module}" is missing required files, skipping...`));
                 continue;
+            }
+            const schemaFilePaths = [modelFilePath];
+            if (await fs.pathExists(dtoFilePath)) {
+                schemaFilePaths.push(dtoFilePath);
+            } else if (await fs.pathExists(reqFilePath)) {
+                schemaFilePaths.push(reqFilePath);
             }
 
             // 扫描 router.go 获取路由信息
@@ -439,13 +450,15 @@ const generateOpenAPIDocs = async (moduleName = null) => {
 
             // 扫描 controller.go 获取方法参数
             const controllerContent = await fs.readFile(controllerFilePath, 'utf-8');
-            const controllerParams = await extractParamsFromController(controllerContent, path.dirname(reqFilePath), path.dirname(modelFilePath));
+            const reqDir = await fs.pathExists(reqFilePath) ? path.dirname(reqFilePath) : modulePath;
+            const controllerParams = await extractParamsFromController(controllerContent, reqDir, path.dirname(modelFilePath));
             // console.log(`Extracted controller parameters for module "${module}":`, controllerParams);
 
-            // 扫描 model.go 和 req.go 获取字段
-            const modelFields = await extractModelFields(modelFilePath);
-            const reqFields = await extractModelFields(reqFilePath);
-            const allFields = [...modelFields, ...reqFields];
+            // 扫描 model.go 和 dto.go/req.go 获取字段
+            const allFields = [];
+            for (const schemaFilePath of schemaFilePaths) {
+                allFields.push(...await extractModelFields(schemaFilePath));
+            }
 
             // 生成 OpenAPI 格式文档
             const openAPIDoc = {

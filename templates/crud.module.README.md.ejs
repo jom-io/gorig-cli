@@ -1,0 +1,70 @@
+# <%= moduleName %> module
+
+Persistent CRUD module generated for <%= dbTitle %>.
+
+## Storage
+
+- Backend: <%= dbTitle %>
+- Database: `<%= dbName %>`
+- Table/collection: `<%= moduleName %>`
+- Unique index: `name`
+- Normal index: `status`
+
+## Configuration
+
+The generator adds a non-secret `<% if (db === 'mysql') { %>Mysql.<%= dbName %><% } else { %>mongo.<%= dbName %><% } %>` connection skeleton to `_bin/local.yaml`, `_bin/dev.yaml`, `_bin/prod.yaml`, and `test/_bin/local.yaml`.
+
+Before integration testing, replace the local placeholder connection values or set environment variables:
+
+<% if (db === 'mysql') { -%>
+- `GORIG_MYSQL_<%= dbEnvName %>_WRITE_HOST`
+- `GORIG_MYSQL_<%= dbEnvName %>_WRITE_PORT`
+- `GORIG_MYSQL_<%= dbEnvName %>_WRITE_DATABASE`
+- `GORIG_MYSQL_<%= dbEnvName %>_WRITE_USER`
+- `GORIG_MYSQL_<%= dbEnvName %>_WRITE_PASS`
+<% } else { -%>
+- `GORIG_MONGO_<%= dbEnvName %>_URI`
+- `GORIG_MONGO_<%= dbEnvName %>_DB_NAME`
+- `GORIG_MONGO_<%= dbEnvName %>_AUTH_SOURCE`
+- `GORIG_MONGO_<%= dbEnvName %>_AUTH_USER`
+- `GORIG_MONGO_<%= dbEnvName %>_AUTH_PASSWORD`
+<% } -%>
+
+Tests normally load `test/_bin/local.yaml` because the Go test package runs with `test/` as its working directory. Do not put real production credentials in committed YAML.
+
+## Service operations
+
+- `Create(ctx, req)`
+- `Info(ctx, id)`
+- `List(ctx, req)`
+- `Page(ctx, req, pageReq)`
+- `Update(ctx, req)`
+- `Delete(ctx, id)`
+
+<% if (http) { -%>
+## HTTP routes
+
+- POST `/<%= moduleName %>/create`
+- GET `/<%= moduleName %>/info?id=`
+- GET `/<%= moduleName %>/list`
+- GET `/<%= moduleName %>/page?page=1&size=10`
+- POST `/<%= moduleName %>/update`
+- DELETE `/<%= moduleName %>/delete?id=`
+<% } -%>
+
+## Verification
+
+```sh
+go fmt ./...
+go vet ./...
+go build ./...
+go test ./... -v
+```
+
+Database integration requires a reachable <%= dbTitle %> connection for `<%= dbName %>`:
+
+```sh
+go test -tags=integration,<%= db %> ./test/... -v
+```
+
+The integration build tag keeps ordinary unit tests independent of external database availability.

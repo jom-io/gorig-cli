@@ -1,0 +1,17 @@
+//go:build integration && <%= db %>
+
+package test
+
+import "github.com/jom-io/gorig/domainx"
+
+func init() {
+<% if (db === 'mysql') { -%>
+	if err := domainx.GormDBServ.Start(); err != nil {
+		panic(err)
+	}
+<% } else { -%>
+	if err := domainx.MongoDBServ.Start(); err != nil {
+		panic(err)
+	}
+<% } -%>
+}

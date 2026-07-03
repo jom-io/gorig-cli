@@ -1,0 +1,52 @@
+package test
+
+import (
+	"testing"
+
+	"<%= projectName %>/domain/<%= moduleName %>"
+)
+
+func Test<%= ModuleName %>CreateReqValidate(t *testing.T) {
+	req := &<%= moduleName %>.CreateReq{Name: "  demo  "}
+	if err := req.Validate(); err != nil {
+		t.Fatalf("Validate failed: %v", err)
+	}
+	if req.Name != "demo" {
+		t.Fatalf("expected trimmed name, got %q", req.Name)
+	}
+	if req.Status != <%= moduleName %>.StatusEnabled {
+		t.Fatalf("expected default enabled status, got %q", req.Status)
+	}
+}
+
+func Test<%= ModuleName %>CreateReqValidateRejectsEmptyName(t *testing.T) {
+	req := &<%= moduleName %>.CreateReq{Name: " "}
+	if err := req.Validate(); err == nil {
+		t.Fatal("expected validation error")
+	}
+}
+
+func Test<%= ModuleName %>UpdateReqUpdates(t *testing.T) {
+	req := &<%= moduleName %>.UpdateReq{ID: 1, Status: <%= moduleName %>.StatusDisabled}
+	fields, err := req.Updates()
+	if err != nil {
+		t.Fatalf("Updates failed: %v", err)
+	}
+	if fields["status"] != <%= moduleName %>.StatusDisabled {
+		t.Fatalf("expected disabled status, got %#v", fields["status"])
+	}
+}
+
+func Test<%= ModuleName %>UpdateReqRejectsEmptyUpdate(t *testing.T) {
+	req := &<%= moduleName %>.UpdateReq{ID: 1}
+	if _, err := req.Updates(); err == nil {
+		t.Fatal("expected empty update error")
+	}
+}
+
+func Test<%= ModuleName %>QueryReqRejectsInvalidStatus(t *testing.T) {
+	req := &<%= moduleName %>.QueryReq{Status: "bad"}
+	if err := req.Normalize(); err == nil {
+		t.Fatal("expected invalid status error")
+	}
+}

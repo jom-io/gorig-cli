@@ -1,4 +1,4 @@
-package <%= moduleName %>
+package hello
 
 import (
 	"github.com/gin-gonic/gin"
@@ -7,8 +7,6 @@ import (
 
 func init() {
 	httpx.RegisterRouter(func(root *gin.RouterGroup) {
-		group := root.Group("/<%= moduleName %>")
-		group.GET("/info", Info)
-		group.POST("/echo", Echo)
+		root.GET("/hello", Get)
 	})
 }

@@ -1,0 +1,103 @@
+package <%= moduleName %>
+
+import (
+	"strings"
+
+	"github.com/jom-io/gorig/utils/errors"
+)
+
+const (
+	StatusEnabled  = "enabled"
+	StatusDisabled = "disabled"
+)
+
+type CreateReq struct {
+	Name   string `json:"name" form:"name"`
+	Status string `json:"status" form:"status"`
+	Remark string `json:"remark" form:"remark"`
+}
+
+type UpdateReq struct {
+	ID     int64  `json:"id" form:"id"`
+	Name   string `json:"name" form:"name"`
+	Status string `json:"status" form:"status"`
+	Remark string `json:"remark" form:"remark"`
+}
+
+type QueryReq struct {
+	Name   string `json:"name" form:"name"`
+	Status string `json:"status" form:"status"`
+}
+
+type Resp struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	Remark string `json:"remark"`
+}
+
+func normalizeStatus(status string) string {
+	status = strings.TrimSpace(status)
+	if status == "" {
+		return StatusEnabled
+	}
+	return status
+}
+
+func validStatus(status string) bool {
+	return status == StatusEnabled || status == StatusDisabled
+}
+
+func (r *CreateReq) Validate() *errors.Error {
+	if r == nil {
+		return errors.VerifyCode(400, "request is required")
+	}
+	r.Name = strings.TrimSpace(r.Name)
+	r.Status = normalizeStatus(r.Status)
+	r.Remark = strings.TrimSpace(r.Remark)
+	if r.Name == "" {
+		return errors.VerifyCode(400, "name is required")
+	}
+	if !validStatus(r.Status) {
+		return errors.VerifyCode(400, "status is invalid")
+	}
+	return nil
+}
+
+func (r *UpdateReq) Updates() (map[string]interface{}, *errors.Error) {
+	if r == nil {
+		return nil, errors.VerifyCode(400, "request is required")
+	}
+	if r.ID <= 0 {
+		return nil, errors.VerifyCode(400, "id is required")
+	}
+	updates := map[string]interface{}{}
+	if name := strings.TrimSpace(r.Name); name != "" {
+		updates["name"] = name
+	}
+	if status := strings.TrimSpace(r.Status); status != "" {
+		if !validStatus(status) {
+			return nil, errors.VerifyCode(400, "status is invalid")
+		}
+		updates["status"] = status
+	}
+	if remark := strings.TrimSpace(r.Remark); remark != "" {
+		updates["remark"] = remark
+	}
+	if len(updates) == 0 {
+		return nil, errors.VerifyCode(400, "no update fields")
+	}
+	return updates, nil
+}
+
+func (r *QueryReq) Normalize() *errors.Error {
+	if r == nil {
+		return nil
+	}
+	r.Name = strings.TrimSpace(r.Name)
+	r.Status = strings.TrimSpace(r.Status)
+	if r.Status != "" && !validStatus(r.Status) {
+		return errors.VerifyCode(400, "status is invalid")
+	}
+	return nil
+}

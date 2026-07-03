@@ -1,4 +1,6 @@
 npm_publish.sh
+docs/gorig-backend-skill-roadmap.md
+test/
 
 # Git
 .git

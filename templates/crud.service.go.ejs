@@ -1,0 +1,179 @@
+package <%= moduleName %>
+
+import (
+	"context"
+
+	"<%= projectName %>/domain/<%= moduleName %>/model"
+
+	"github.com/jom-io/gorig/apix/load"
+	"github.com/jom-io/gorig/domainx"
+	"github.com/jom-io/gorig/domainx/dx"
+	"github.com/jom-io/gorig/utils/errors"
+	"github.com/jom-io/gorig/utils/logger"
+	"go.uber.org/zap"
+)
+
+func init() {
+	domainx.AutoMigrate(
+		func() domainx.ConTable {
+			return dx.On[model.D](context.Background()).Complex()
+		},
+		domainx.CtIdx(domainx.Unique, "name"),
+		domainx.CtIdx(domainx.Idx, "status"),
+	)
+}
+
+func Create(ctx context.Context, req *CreateReq) (int64, *errors.Error) {
+	if err := req.Validate(); err != nil {
+		return 0, err
+	}
+
+	exists, err := dx.On[model.D](ctx).Eq("name", req.Name).Exists()
+	if err != nil {
+		logger.Error(ctx, "<%= moduleName %> duplicate check failed", zap.Error(err))
+		return 0, err
+	}
+	if exists {
+		return 0, errors.VerifyCode(409, "name already exists")
+	}
+
+	d := model.D{
+		Name:   req.Name,
+		Status: req.Status,
+		Remark: req.Remark,
+	}
+	id, err := dx.On[model.D](ctx, &d).Save()
+	if err != nil {
+		logger.Error(ctx, "<%= moduleName %> create failed", zap.Error(err))
+		return 0, err
+	}
+	logger.Info(ctx, "<%= moduleName %> created", zap.Int64("id", id), zap.String("name", req.Name))
+	return id, nil
+}
+
+func Info(ctx context.Context, id int64) (*Resp, *errors.Error) {
+	if id <= 0 {
+		return nil, errors.VerifyCode(400, "id is required")
+	}
+	item, err := dx.On[model.D](ctx).WithID(id).Get()
+	if err != nil {
+		logger.Error(ctx, "<%= moduleName %> get failed", zap.Int64("id", id), zap.Error(err))
+		return nil, err
+	}
+	if item == nil || item.IsNil() || item.Data == nil {
+		return nil, errors.VerifyCode(404, "<%= moduleName %> not found")
+	}
+	return toResp(item), nil
+}
+
+func List(ctx context.Context, req *QueryReq) ([]*Resp, *errors.Error) {
+	query, err := buildQuery(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	result, err := query.Sort("id").Find()
+	if err != nil {
+		logger.Error(ctx, "<%= moduleName %> list failed", zap.Error(err))
+		return nil, err
+	}
+	return listToResp(result), nil
+}
+
+func Page(ctx context.Context, req *QueryReq, pageReq *load.Page) (*load.PageResp, *errors.Error) {
+	if pageReq == nil {
+		pageReq = load.BuildPage(ctx, 1, 10, 0)
+	}
+	query, err := buildQuery(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	result, err := query.Sort("id").Page(pageReq.Page, pageReq.Size, pageReq.LastID)
+	if err != nil {
+		logger.Error(ctx, "<%= moduleName %> page failed", zap.Error(err))
+		return nil, err
+	}
+	resp := &load.PageResp{
+		Page:   result.Page,
+		Size:   result.Size,
+		Total:  result.Total,
+		LastID: result.LastID,
+		Result: pageToResp(result.Result),
+	}
+	return resp, nil
+}
+
+func Update(ctx context.Context, req *UpdateReq) *errors.Error {
+	fields, err := req.Updates()
+	if err != nil {
+		return err
+	}
+	if _, err = Info(ctx, req.ID); err != nil {
+		return err
+	}
+	if err = dx.On[model.D](ctx).WithID(req.ID).Updates(fields); err != nil {
+		logger.Error(ctx, "<%= moduleName %> update failed", zap.Int64("id", req.ID), zap.Error(err))
+		return err
+	}
+	logger.Info(ctx, "<%= moduleName %> updated", zap.Int64("id", req.ID))
+	return nil
+}
+
+func Delete(ctx context.Context, id int64) *errors.Error {
+	if _, err := Info(ctx, id); err != nil {
+		return err
+	}
+	if err := dx.On[model.D](ctx).WithID(id).Delete(); err != nil {
+		logger.Error(ctx, "<%= moduleName %> delete failed", zap.Int64("id", id), zap.Error(err))
+		return err
+	}
+	logger.Info(ctx, "<%= moduleName %> deleted", zap.Int64("id", id))
+	return nil
+}
+
+func buildQuery(ctx context.Context, req *QueryReq) (dx.DQuery[model.D], *errors.Error) {
+	if req == nil {
+		req = &QueryReq{}
+	}
+	if err := req.Normalize(); err != nil {
+		return nil, err
+	}
+	return dx.On[model.D](ctx).
+		NEmpty("name").
+		Like("name", req.Name).
+		Eq("status", req.Status), nil
+}
+
+func toResp(item *domainx.Complex[model.D]) *Resp {
+	if item == nil || item.Data == nil {
+		return nil
+	}
+	return &Resp{
+		ID:     item.GetID().Int64(),
+		Name:   item.Data.Name,
+		Status: item.Data.Status,
+		Remark: item.Data.Remark,
+	}
+}
+
+func listToResp(items domainx.ComplexList[model.D]) []*Resp {
+	resp := make([]*Resp, 0, len(items))
+	for _, item := range items {
+		if r := toResp(item); r != nil {
+			resp = append(resp, r)
+		}
+	}
+	return resp
+}
+
+func pageToResp(items *[]*domainx.Complex[model.D]) []*Resp {
+	if items == nil {
+		return []*Resp{}
+	}
+	resp := make([]*Resp, 0, len(*items))
+	for _, item := range *items {
+		if r := toResp(item); r != nil {
+			resp = append(resp, r)
+		}
+	}
+	return resp
+}

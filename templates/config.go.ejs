@@ -1,14 +1,15 @@
 package global
 
-import (
-	configure "github.com/jom-io/gorig/utils/cofigure"
-)
+import configure "github.com/jom-io/gorig/utils/cofigure"
 
 var (
-	DBDef    = "def"
 	SysName  = ""
+	RunMode  = ""
+	RestAddr = ""
 )
 
 func init() {
-	SysName = configure.GetString("sys.name", "TEST")
+	SysName = configure.GetString("sys.name", "<%= projectNameUpper %>")
+	RunMode = configure.GetString("sys.mode", "local")
+	RestAddr = configure.GetString("api.rest.addr", ":<%= localPort %>")
 }

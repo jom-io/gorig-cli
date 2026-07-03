@@ -1,0 +1,31 @@
+package hello
+
+import (
+	"context"
+	"strings"
+
+	"github.com/jom-io/gorig/utils/errors"
+	"github.com/jom-io/gorig/utils/logger"
+	"<%= moduleName %>/global"
+	"go.uber.org/zap"
+)
+
+type Info struct {
+	App     string `json:"app"`
+	Mode    string `json:"mode"`
+	Message string `json:"message"`
+}
+
+func Greeting(ctx context.Context, name string) (*Info, *errors.Error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, errors.Verify("name cannot be empty")
+	}
+
+	logger.Info(ctx, "building greeting", zap.String("name", name))
+	return &Info{
+		App:     global.SysName,
+		Mode:    global.RunMode,
+		Message: "hello " + name,
+	}, nil
+}

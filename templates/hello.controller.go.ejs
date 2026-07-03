@@ -1,0 +1,19 @@
+package hello
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jom-io/gorig/apix"
+	"github.com/jom-io/gorig/global/consts"
+)
+
+func Get(ctx *gin.Context) {
+	defer apix.HandlePanic(ctx)
+
+	name, err := apix.GetParamType[string](ctx, "name", apix.NotForce, "world")
+	if err != nil {
+		return
+	}
+
+	result, serviceErr := Greeting(ctx, name)
+	apix.HandleData(ctx, consts.CurdSelectFailCode, result, serviceErr)
+}

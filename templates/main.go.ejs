@@ -1,11 +1,8 @@
 package main
 
-import (
-	"github.com/jom-io/gorig/bootstrap"
-)
+import "github.com/jom-io/gorig/bootstrap"
 
-import _ "<%= projectName %>/cron"
-import _ "<%= projectName %>/domain"
+import _ "<%= moduleName %>/domain"
 
 func main() {
 	bootstrap.StartUp()

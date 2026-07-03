@@ -8,7 +8,7 @@ const args = process.argv.slice(2);
 
 // Validate if a command is provided
 if (args.length < 1) {
-  console.error(chalk.red('Please provide a valid command, e.g.: create or init'));
+  console.error(chalk.red('Please provide a valid command, e.g.: create, init, doc, or skill'));
   process.exit(1);
 }
 
@@ -48,8 +48,17 @@ switch (command) {
     });
     break;
 
+  case 'skill':
+    import(path.join(__dirname, '../commands/skill.js')).then(module => {
+      const skillModule = module.default;
+      skillModule(args.slice(1));
+    }).catch(error => {
+      console.error(chalk.red('Failed to load skill command module:', error.message));
+    });
+    break;
+
   default:
     console.error(chalk.red(`Unknown command: ${command}`));
-    console.error(chalk.yellow('Available commands: create, init'));
+    console.error(chalk.yellow('Available commands: create, init, doc, skill'));
     process.exit(1);
 }

@@ -4,42 +4,7 @@ sys:
 
 api:
   rest:
-    addr: :9527
+    addr: ":<%= port %>"
 
-#db:
-#  prefix: <%= projectPrefix %>_
-
-#mongo:
-#  Main:
-#    uri: mongodb://addr
-#    auth:
-#      need: true
-#      source: db_source
-#      user: user
-#      password: pwd
-#    db:
-#      name: db_name
-#
-#Mysql:
-#  Main:
-#    GormInit: 1
-#    SlowThreshold: 30  # Slow SQL threshold (sysql execution time exceeds this time unit (second), system logging will be triggered)
-#    Write:
-#      Host: addr
-#      DataBase: db_name
-#      Port: 3306
-#      User: user
-#      Pass: pwd
-#      Charset: "utf8"
-#      SetMaxIdleConns: 10
-#      SetMaxOpenConns: 128
-#      SetConnMaxLifetime: 60 # Maximum survival time when connection is inactive (seconds)
-
-#redis:
-#  addr: localhost:6379
-#  password:
-#  db: 0
-
-#notify:
-#  dingding:
-#    token: xxxxx
+# Add database, Redis, and notification configuration only when the project uses them.
+# Prefer GORIG_<SECTION>_<KEY> environment variables for secrets.
