@@ -4,6 +4,8 @@
 
 Use it when you want generated code to follow the same Gorig structure and framework conventions instead of starting from ad hoc scaffolding.
 
+Main Gorig framework repository: [https://github.com/jom-io/gorig](https://github.com/jom-io/gorig)
+
 ## What It Does
 
 | Capability | Description |
