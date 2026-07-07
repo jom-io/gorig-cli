@@ -1,5 +1,5 @@
 .DS_Store
 node_modules/
 *.log
+*.sh
 test/fixtures/framework-api/.logs/
-npm_publish copy.sh
