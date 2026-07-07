@@ -1,13 +1,13 @@
-# <module> 模块说明
+# <module> Module README
 
-## 1. 模块职责
+## 1. Module Responsibility
 
-- 目标：
-- 边界：
-- 非目标：
-- Gorig 版本：
+- Objective:
+- Boundary:
+- Non-goals:
+- Gorig version:
 
-## 2. 目录结构
+## 2. Directory Layout
 
 ```text
 domain/<module>/
@@ -18,41 +18,41 @@ domain/<module>/
 └── model/
 ```
 
-## 3. 请求处理流程
+## 3. Request Flow
 
-1. Router 注册入口与中间件。
-2. Controller 处理参数、panic 和响应。
-3. Service 执行业务逻辑与错误处理。
-4. Model 或 dx 执行数据访问。
+1. Router registers endpoints and middleware.
+2. Controller handles parameters, panic handling, and responses.
+3. Service executes business logic and error handling.
+4. Model or dx performs data access.
 
-## 4. 数据模型
+## 4. Data Model
 
-| 结构体 | 说明 | 关键字段 |
+| Struct | Description | Key fields |
 |---|---|---|
 |  |  |  |
 
-## 5. 对外接口
+## 5. External APIs
 
-| 名称 | 方法 | 路径 | 说明 |
+| Name | Method | Path | Description |
 |---|---|---|---|
 |  |  |  |  |
 
-## 6. 配置、错误与日志
+## 6. Configuration, Errors, and Logs
 
-- 配置项：
-- 错误定义位置：
-- 常见错误码：
-- 日志关键字段：
+- Configuration keys:
+- Error definition location:
+- Common error codes:
+- Key log fields:
 
-## 7. 测试与效果验证
+## 7. Tests and Effect Verification
 
-- 单元测试：
-- 集成测试：
+- Unit tests:
+- Integration tests:
 - Smoke test：
-- 已知限制：
+- Known limitations:
 
-## 8. 维护约定
+## 8. Maintenance Conventions
 
-- 命名：
-- 兼容性：
-- 文档更新规则：
+- Naming:
+- Compatibility:
+- Documentation update rules:

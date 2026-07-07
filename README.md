@@ -1,6 +1,17 @@
 # Gorig CLI
 
-Gorig CLI is a scaffolding tool based on Node.js, used for quickly creating the project structure and modules based on the Gorig framework for Go.
+Gorig CLI is the command-line tool for initializing Gorig projects, generating modules, installing the `gorig-backend` skill, and keeping generated projects aligned with the verified Gorig backend roadmap.
+
+## Roadmap Status
+
+The `gorig-backend` skill roadmap is tracked in [docs/gorig-backend-skill-roadmap.md](docs/gorig-backend-skill-roadmap.md). This README documents the stable CLI workflows and the currently verified skill surface.
+
+| Scope | Status |
+|---|---|
+| Skill foundation, source rules, and version detection | verified |
+| Locally runnable basic project generation | verified |
+| HTTP API, modules, database, cache, cron, messaging, SSE, auth, security, and outbound networking guidance | verified |
+| Observability, deployment, and operations guidance | pending |
 
 ## Installation
 
@@ -18,7 +29,7 @@ npx gorig-cli@latest <command>
 
 ## Quick Start
 
-### Initialize a New Project
+### Initialize a Runnable Project
 
 Use the `init` command to create a new project:
 
@@ -53,7 +64,7 @@ gorig-cli init my-new-project \
 
 Use `--force` only when an existing non-empty destination may be replaced. Use `--start` to start immediately; otherwise initialization is non-interactive and does not start the service.
 
-### Create a New Module
+### Create a Basic Module
 
 Use the `create` command in the project root directory to create a new module:
 
@@ -80,6 +91,8 @@ domain/user/
 ```
 
 The generated routes are `GET /user/info` and `POST /user/echo`. More complex persistence-backed CRUD modules should keep the same flat module boundary and add `domainx/dx` access in `service.go` plus storage structs under `model/`.
+
+### Create a Persistent CRUD Module
 
 To generate a persistent CRUD module backed by Gorig `domainx/dx`, choose MySQL or MongoDB explicitly:
 
@@ -122,45 +135,43 @@ http://127.0.0.1:8080/redoc.html
 
 ### Install Gorig Skill
 
-Use the `skill` command to install the bundled `gorig-backend` skill for Codex or Claude:
+Use the `skill` command to install the bundled `gorig-backend` skill for Codex or Claude.
+
+Install the Codex skill globally:
 
 ```sh
-# Install both Codex and Claude user-level skills
-gorig-cli skill install all
-
-# Install only the Codex skill
 gorig-cli skill install codex
-
-# Install only the Codex skill into the current repository
-gorig-cli skill install codex project
-
-# Install Claude user-level skill
-gorig-cli skill install claude user
-
-# Install Claude project-level skill into the current repository
-gorig-cli skill install claude project
-
-# Install both project-level skills into the current repository
-gorig-cli skill install all project
 ```
 
-Or use npx:
+Install both Codex and Claude skills globally:
 
 ```sh
-npx gorig-cli@latest skill install all
-npx gorig-cli@latest skill install codex
-npx gorig-cli@latest skill install codex project
-npx gorig-cli@latest skill install claude user
-npx gorig-cli@latest skill install claude project
-npx gorig-cli@latest skill install all project
+gorig-cli skill install all
 ```
 
-Install locations:
+Install the Codex skill into the current repository:
 
-- Codex user: `~/.agents/skills/gorig-backend/`
-- Codex project: `.agents/skills/gorig-backend/`
-- Claude user: `~/.claude/skills/gorig-backend/`
-- Claude project: `.claude/skills/gorig-backend/`
+```sh
+gorig-cli skill install codex project
+```
+
+The install scope defaults to `user`. Use `project` only when the skill should be stored in the current repository.
+
+### Use with AI Agents
+
+After installing the skill, open a Gorig project in Codex or Claude and ask for framework-specific backend work:
+
+```text
+Use the gorig-backend skill to add a MySQL order CRUD module with tests and API docs.
+```
+
+```text
+Use the gorig-backend skill to review startup, routing, config, and middleware usage.
+```
+
+```text
+Use the gorig-backend skill to add login, protected routes, logout, and security tests.
+```
 
 ### Run the Project
 
@@ -176,3 +187,19 @@ Or run it after building:
 ```sh
 go build -o my-new-project _cmd/main.go && ./my-new-project
 ```
+
+## Verified Capabilities
+
+- Dependency-free project bootstrap with `local`, `dev`, and `prod` configuration.
+- Flat feature-first module generation under `domain/<module>/`.
+- MySQL and MongoDB CRUD generation through Gorig `domainx/dx`.
+- API documentation generation for generated HTTP modules.
+- Skill installation for Codex and Claude from one canonical bundled source.
+- Skill references and fixtures for cache, scheduled tasks, messaging, SSE, authentication, security, and outbound networking.
+
+## Current Boundaries
+
+- Persistent CRUD generation is verified for MySQL and MongoDB.
+- Runtime verification for MySQL, MongoDB, and Redis requires configured development infrastructure.
+- Observability, deployment, and operations guidance is the next roadmap phase.
+- Real remote deployment or production mutation requires explicit user authorization.

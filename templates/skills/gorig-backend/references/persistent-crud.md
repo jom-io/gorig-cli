@@ -158,6 +158,22 @@ Services must:
 - Guard empty update/delete conditions.
 - Treat not-found and duplicate cases explicitly.
 
+## Query and Pagination Safety
+
+List and page behavior must be database-backed.
+
+Rules:
+
+- Use `dx.Page(page, size, lastID)` for paginated API responses. Do not call `Find()`, convert the full result to `List()`, and slice it in memory.
+- Push optional filters into the `dx` query before `Find()` or `Page()`. Do not fetch all records and filter in Go.
+- Push sort order into `Sort(...)`. Do not sort an unbounded in-memory slice for API responses.
+- Use `Count`, `Sum`, `Exists`, and projection APIs when only aggregate or existence data is needed. Do not fetch full rows to count, sum, or check existence in Go.
+- Put a conservative maximum page size in DTO validation or service validation when the project has no existing convention.
+- For background jobs that must inspect many records, use restrictive matches plus `FindEach` or `AllEach`; do not load an entire table into memory.
+- If a requirement cannot be expressed through `dx`, use a direct driver escape hatch with equivalent database-side filtering, pagination, and limits.
+
+The only acceptable in-memory post-processing is bounded processing after the database already applied the main filter/page/limit, and it must not change pagination semantics.
+
 ## Optional HTTP Adapter
 
 When HTTP is in scope, use clear resource routes unless the existing project has a stricter convention:
@@ -256,6 +272,8 @@ err = dx.On[model.D](ctx).WithID(id).Delete()
 ```
 
 Check the exact `dx` signatures in the resolved project version before coding.
+
+For API pagination, prefer the `Page` call above. Use `Find` only for intentionally bounded lists, such as small lookup sets or internal logic with a restrictive match.
 
 In the verified Gorig implementation, omitted/`false` trailing booleans enable the normal zero-value check, so empty optional filters are skipped. Passing `true` disables that check and forces an empty/zero condition into the query. Do not use `value == ""` as the third argument for optional filters.
 

@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+*.log
+test/fixtures/framework-api/.logs/
+npm_publish copy.sh

@@ -15,6 +15,9 @@ Prefer an exact version or commit over the moving `master` links below.
 - Scheduled tasks: `https://github.com/jom-io/gorig/tree/master/cronx`
 - Messaging: `https://github.com/jom-io/gorig/tree/master/mid/messagex`
 - Authentication: `https://github.com/jom-io/gorig/tree/master/mid/tokenx`
+- Auth middleware: `https://github.com/jom-io/gorig/blob/master/httpx/mid.sign.go`
+- Security middleware: `https://github.com/jom-io/gorig/blob/master/httpx/mid.cors.go`, `https://github.com/jom-io/gorig/blob/master/httpx/mid.debounce.go`
+- Outbound HTTP: `https://github.com/jom-io/gorig/blob/master/httpx/http.go`
 - Tests: `https://github.com/jom-io/gorig/tree/master/test`
 
 To inspect a release, replace `/master/` with the tag, for example `/v0.0.52/`, after confirming the tag exists.

@@ -62,6 +62,8 @@ Do not rely on relative startup order among registered services unless the targe
 
 ## Model and dx
 
+For advanced filters, aggregates, projections, batch scans, indexes, direct-driver escape hatches, and transaction boundaries, read `advanced-data-access.md`.
+
 ```go
 type Order struct {
 	UserID int64  `bson:"user_id" json:"user_id"`
@@ -98,6 +100,8 @@ The optional boolean on `Eq`, `Like`, and related methods means "ignore the fram
 
 ## Cache
 
+For cache-aside, invalidation, counters, queues, multi-level cache, singleflight, and source-of-truth guidance, read `cache.md`.
+
 ```go
 memory := cache.New[Order](cache.Memory, time.Minute, time.Minute)
 jsonFile := cache.New[Order](cache.JSON, "orders")
@@ -109,15 +113,39 @@ Test local backends independently. Require explicit Redis configuration before c
 
 ## Scheduled Task
 
+For task lifecycle, timeout, panic recovery, deduplication, delay/once jobs, and verification rules, read `scheduled-tasks.md`.
+
 ```go
 cronx.AddCronTask("0 */5 * * * *", func(ctx context.Context) {
 	logger.Info(ctx, "scheduled sync")
 }, 30*time.Second)
+
+cronx.AddEveryTask(5*time.Minute, func(ctx context.Context) {
+	logger.Info(ctx, "interval sync")
+}, 30*time.Second)
+
+type DelayPayload struct {
+	OrderID int64 `json:"order_id"`
+}
+
+func (DelayPayload) PersistPayload() {}
+
+func handleDelay(ctx context.Context, payload DelayPayload) error {
+	logger.Info(ctx, "persistent delay task", zap.Int64("order_id", payload.OrderID))
+	return nil
+}
+
+_ = cronx.RegisterPersistTask(handleDelay)
+_, _ = cronx.AddPersistDelayTask(time.Minute, handleDelay, DelayPayload{OrderID: 1}, 30*time.Second)
 ```
 
-Do not use `AddEveryTask` against the inspected local baseline until its locking behavior is fixed and tested.
+Use `AddEveryTask` only when the target Gorig version includes commit `92c28b5` or an equivalent fix. Older versions can recursively lock during registration; use `AddCronTask("@every <interval>", ...)` directly on those versions.
+
+Use persistent delay/once tasks only when the target Gorig version includes commit `0af68e8` or an equivalent implementation and Redis is configured. Persistent handlers must be named functions, payloads must implement `PersistPayload`, and payloads must be JSON serializable.
 
 ## Messaging
+
+For broker selection, sequential subscribers, retries, DLQ behavior, Redis integration, unsubscribe cleanup, and message-to-SSE composition, read `messaging.md`.
 
 ```go
 broker := messagex.Ins(messagex.Local)
@@ -133,6 +161,8 @@ broker.PublishNewMsg(ctx, "order.created", map[string]any{"order_id": id})
 Use `messagex.Redis` only with configured Redis integration. RabbitMQ is unsupported in the inspected baseline.
 
 ## SSE
+
+For streaming route structure, event/error payloads, long-lived streams, disconnect handling, and message-to-SSE composition, read `sse.md`.
 
 ```go
 httpx.RegisterRouter(func(root *gin.RouterGroup) {

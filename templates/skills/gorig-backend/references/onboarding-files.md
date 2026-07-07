@@ -28,6 +28,8 @@ Read the resolved Gorig version, not an unrelated checkout.
 - Scheduled tasks: `cronx/` and `test/cron_test.go`.
 - Messaging: `mid/messagex/` and `test/message_test.go`.
 - Authentication: `mid/tokenx/`, `httpx/mid.sign.go`, and relevant tests or real consumers.
+- Security middleware: `httpx/mid.cors.go`, `httpx/mid.debounce.go`, `httpx/mid.logger.go`, and response helpers for auth/rate-limit errors.
+- Outbound HTTP: `httpx/http.go` and any project-specific external API wrappers.
 - SSE: `httpx/ssex/` and `test/ssex_test.go`.
 - Configuration, errors, and logs: `utils/cofigure/`, `utils/errors/`, `utils/logger/`.
 

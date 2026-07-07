@@ -1,34 +1,34 @@
-# <module> API 文档
+# <module> API Documentation
 
-## 1. 模块说明
+## 1. Module Overview
 
-- 模块名：
-- 业务目标：
-- 依赖服务/存储：
-- Gorig 版本：
+- Module name:
+- Business objective:
+- Dependent services/storage:
+- Gorig version:
 
-## 2. 接口清单
+## 2. API List
 
-| 名称 | 方法 | 路径 | 鉴权 | 说明 |
+| Name | Method | Path | Auth | Description |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
-## 3. 接口详情
+## 3. API Details
 
-### 3.1 <接口名>
+### 3.1 <api name>
 
-- 方法与路径：
+- Method and path:
 - Controller：
 - Service：
-- 说明：
+- Description:
 
-#### 请求参数
+#### Request Parameters
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 |  |  |  |  |
 
-#### 响应示例
+#### Response Example
 
 ```json
 {
@@ -38,13 +38,13 @@
 }
 ```
 
-#### 错误码
+#### Error Codes
 
-| code | 含义 | 触发场景 |
+| code | Meaning | Trigger |
 |---|---|---|
 |  |  |  |
 
-## 4. 调用与验证
+## 4. Invocation and Verification
 
 ```sh
 curl -X POST 'http://<host>/<path>' \
@@ -52,8 +52,8 @@ curl -X POST 'http://<host>/<path>' \
   -d '{}'
 ```
 
-## 5. 变更记录
+## 5. Change Log
 
-| 日期 | 变更人 | 说明 |
+| Date | Author | Description |
 |---|---|---|
 |  |  |  |

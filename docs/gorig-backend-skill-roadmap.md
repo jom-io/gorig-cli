@@ -29,10 +29,10 @@ Current status:
 |---|---|---|
 | 0 | Skill foundation and source-of-truth rules | verified |
 | 1 | Locally runnable basic project | verified |
-| 2 | HTTP API and module development | pending |
-| 3 | Database and cache | pending |
-| 4 | Scheduled tasks, messaging, and SSE | pending |
-| 5 | Authentication, security, and outbound networking | pending |
+| 2 | HTTP API and module development | verified |
+| 3 | Database and cache | verified |
+| 4 | Scheduled tasks, messaging, and SSE | verified |
+| 5 | Authentication, security, and outbound networking | verified |
 | 6 | Observability, deployment, and operations | pending |
 
 ## 3. Global Definition of Done
@@ -49,6 +49,9 @@ Every phase must satisfy all applicable checks below:
 8. Update source links, capability maturity labels, and known limitations.
 9. Do not mark unsupported framework behavior as available. If an upstream defect is found, record it and either fix it in the framework or document the supported alternative.
 10. Do not include real credentials, production addresses, or private deployment material in examples or fixtures.
+11. For material architecture, API, persistence, runtime behavior, configuration, external dependency, or deployment changes, present the impact and wait for explicit confirmation before implementation.
+12. For ordinary business-language requests, first decompose the scenario into trigger, durability, audience, data, external dependency, and user-visible effect; present component options and wait for confirmation.
+13. Verify the observable business outcome in addition to framework primitive behavior.
 
 Recommended quality gates:
 
@@ -217,7 +220,7 @@ Deliverables:
 - Extend beyond Phase 2's baseline CRUD into advanced MySQL/MongoDB data access: complex filters, sorting, projection, count/sum, safe batch scans, direct-driver escape hatches, and transaction boundaries where supported or required.
 - Document legacy `domainx` APIs versus preferred `domainx/dx` APIs by version.
 - Deepen migration and index guidance beyond baseline CRUD, including compound indexes and backend-specific differences.
-- Cover Memory, JSON, SQLite, and Redis caches, cache-aside, multi-level caching, expiration, counters, queues, cache invalidation, and singleflight.
+- Cover Memory, JSON, SQLite, and Redis cache backend selection, Redis configuration guidance, cache-aside, multi-level caching, expiration, counters, cache invalidation, and singleflight.
 - Add explicit guidance for when cache is an acceleration layer versus when it is not an acceptable source of truth.
 
 Verification:
@@ -250,7 +253,7 @@ Verification:
 Deliverables:
 
 - Cover token generation, parsing, recording, refresh, revocation, route middleware, user context, role/attribute filtering, and logout.
-- Clearly separate working memory-token behavior from incomplete Redis-token behavior.
+- Clearly separate memory-token behavior from Redis-token behavior, including target-version source availability and Redis configuration requirements.
 - Cover CORS, debounce/rate protection, request signing where supported, secret configuration, and sensitive logging rules.
 - Cover outbound GET, form, JSON, XML, headers, context propagation, timeout, error handling, and image fetching.
 - Add a minimal login -> protected route -> logout flow.
@@ -381,10 +384,11 @@ Do not replace command output with a general statement such as "tests passed". R
   - HTTP smoke for the newly generated `supply_order` endpoint could not complete inside the restricted sandbox because binding `:19827` returned `operation not permitted`; route registration and compile/test checks passed.
 - Follow-up work: Install this verified project-scoped skill into `gorig-ai-test`, then begin Phase 2 after user acceptance testing.
 
-### Phase 2 Implementation Progress
+### Phase 2 Completion
 
-- Status: in_progress
-- Date: 2026-07-02
+- Status: verified
+- Gorig version(s): local `master` commit `35bbefb`
+- Date: 2026-07-03
 - Implemented:
   - Added `references/persistent-crud.md` and routed persistent CRUD requests through it from `SKILL.md`.
   - Clarified that CRUD is a persistence/service capability; HTTP router/controller/doc generation is an optional adapter when HTTP is in scope.
@@ -412,8 +416,185 @@ Do not replace command output with a general statement such as "tests passed". R
   - `python3 .../skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
   - `npm_config_cache=/tmp/gorig-npm-cache npm pack --dry-run` — CRUD templates and `persistent-crud.md` included
   - `node ../gorig-cli/bin/cli.js skill install codex project` in `gorig-ai-test` — latest canonical skill installed and byte-compared with the source
-- Current verification boundary:
+- Effect verification:
   - Compile-level generation is verified for MySQL and MongoDB CRUD modules.
   - Generated validation tests pass without external infrastructure.
   - Live MySQL Create, Info, filtered List, filtered Page, Update, and Delete passed in `customer-api` after correcting the optional-filter template defect.
+- Known limitations:
   - MongoDB effect verification is still pending and requires a reachable development configuration.
+- Follow-up work: Begin Phase 3 by adding verified advanced data access and cache references, compile fixtures, and local cache behavior checks.
+
+### Phase 3 Completion
+
+- Status: verified
+- Gorig version(s): local `master` commit `35bbefb`
+- Date: 2026-07-03
+- Implemented:
+  - Added `references/advanced-data-access.md` with advanced `domainx/dx` filters, sorting, projection, count/sum, pagination, batch scans, migration/index guidance, direct-driver escape hatches, and transaction boundaries.
+  - Added `references/cache.md` with Memory, JSON, SQLite, Redis, backend selection guidance, Redis configuration keys, cache-aside, source-of-truth boundaries, expiration, invalidation, counters, multi-level cache, singleflight, key design, direct service examples, and verification guidance.
+  - Kept cache workflow decisions under the general material-change conversation workflow instead of adding cache-specific confirmation rules.
+  - Routed advanced data access and cache requests from `SKILL.md` to the dedicated references.
+  - Updated `framework-api.md` to keep baseline snippets and point advanced scenarios to their dedicated references.
+  - Updated `capability-matrix.md` to reflect Phase 2 CRUD verification, advanced data access boundaries, local cache verification, Redis integration requirements, and multi-level cache verification.
+  - Updated `testing.md` with advanced data access, cache verification rules, and project-level `test/` placement guidance for Gorig feature tests.
+  - Extended the framework API fixture with compile coverage for advanced `dx` methods, cache operations, multi-level cache, SQLite paged cache, and direct-driver type boundaries.
+  - Added local behavior tests for Memory, JSON, SQLite, and multi-level cache singleflight.
+  - Tightened `.npmignore` so local `npm_publish*.sh` helper copies are excluded from npm packages.
+- Commands run:
+  - `gofmt -w test/fixtures/framework-api/framework_api_test.go test/fixtures/framework-api/cache_behavior_test.go`
+  - `GOCACHE=/tmp/gorig-go-cache GOPROXY=off GOSUMDB=off go test ./... -v` in `test/fixtures/framework-api` — passed; Memory, JSON, SQLite, and multi-level cache tests ran.
+  - `node --check commands/skill.js` — passed
+  - `node --test test/skill-install.test.mjs test/init-project.test.mjs` — 11/11 passed
+  - `python3 /Users/doz/.codex/skills/.system/skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
+  - `npm_config_cache=/tmp/gorig-npm-cache npm pack --dry-run` — `advanced-data-access.md` and `cache.md` included; `docs/`, `test/`, and `npm_publish copy.sh` excluded
+- Effect verification:
+  - Advanced `dx` examples compile against local Gorig `35bbefb`.
+  - Local cache behavior is verified for miss/hit, delete, expiry, flush, counters, JSON file persistence, SQLite file creation/read/delete/expiry, lower-layer backfill, multi-layer delete, and singleflight concurrent loading.
+  - Skill installation tests still install identical canonical content for Codex and Claude project scopes.
+  - Generated-project CLI regression coverage remains green after the skill reference changes.
+- Known limitations:
+  - Redis emits initialization warnings in the framework fixture when no Redis configuration is available; Redis behavior remains integration-only and was not claimed verified in this run. Redis work should guide users to provide `redis.addr`, `redis.password`, and `redis.db` or the corresponding `GORIG_REDIS_*` environment variables.
+  - Advanced MySQL and MongoDB runtime behavior for aggregates, geo queries, indexes, direct-driver escape hatches, and transactions still requires disposable or explicitly configured integration services.
+  - MongoDB Phase 2 CRUD effect verification is still pending for a reachable development configuration.
+- Follow-up work: Begin Phase 4 by adding verified cron, messaging, and SSE references plus deterministic local behavior checks.
+
+### Phase 3 Acceptance Update
+
+- Status: verified
+- Gorig version(s): local `master` commit `0af68e8`; Phase 3 original verification baseline `35bbefb`
+- Date: 2026-07-06
+- Implemented:
+  - User accepted Route/Phase 3 as passed after the advanced data access and cache work.
+  - Strengthened data-query guidance so list/page/filter/sort/count/sum/existence logic must be pushed into the database or verified framework APIs.
+  - Added explicit rules prohibiting `Find()` followed by in-memory filtering, sorting, counting, or pagination for API query paths.
+  - Added guidance to use `Page`, `Count`, `Sum`, `Exists`, `Select`/`Omit`, `FindEach`, `AllEach`, or direct-driver database-side filtering/limits when needed.
+  - Updated testing guidance to reject pagination tests that pass only because a small fixture was loaded into memory and sliced.
+- Commands run:
+  - `python3 /Users/doz/.codex/skills/.system/skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
+  - `git diff --check` — passed
+- Effect verification:
+  - Skill instructions now explicitly guard against memory-unsafe query implementations that can load unbounded data into Go memory.
+- Known limitations:
+  - These are instruction-level and documentation-level safeguards; concrete project implementations must still be reviewed and tested for database-backed pagination/filtering.
+- Follow-up work: Continue Route/Phase 4: scheduled tasks, messaging, SSE, and Redis-backed integration verification.
+
+### Phase 4 Partial Record
+
+- Status: in_progress
+- Gorig version(s): local `master` commit `0af68e8`; earlier Phase 4 baselines `92c28b5` and `35bbefb`
+- Date: 2026-07-06
+- Implemented:
+  - Added `references/scheduled-tasks.md` with verified `AddCronTask`, `AddEveryTask`, `AddDelayTask`, `AddOnceTask`, timeout, panic recovery, deduplication, and shutdown. `AddEveryTask` requires Gorig commit `92c28b5` or an equivalent fix.
+  - Added source-verified Redis-backed persistent delay/once task guidance for `RegisterPersistTask`, `AddPersistDelayTask`, and `AddPersistOnceTask`; this requires Gorig commit `0af68e8` or an equivalent implementation.
+  - Added `references/messaging.md` with local broker, Redis broker boundary, concurrent subscribers, sequential subscribers, retry, local DLQ delivery, Redis replay boundary, unsubscribe, and message-to-SSE composition guidance.
+  - Added `references/sse.md` with GET-only middleware, event/error payloads, long-lived stream lifecycle, disconnect handling, and message-to-SSE cleanup guidance.
+  - Routed scheduled-task, messaging, and SSE requests from `SKILL.md` to the dedicated references.
+  - Updated `framework-api.md`, `capability-matrix.md`, and `testing.md` with Phase 4 boundaries and verification rules.
+  - Extended the framework API fixture with compile coverage for interval/delay/once/persistent cron jobs, sequential message subscriptions, retry options, and DLQ replay calls.
+  - Added deterministic local behavior tests for cron execution/deduplication/timeout/panic/every/delay/once/shutdown, persistent task registration and payload validation errors, local message publish/consume/multiple subscribers/sequential retry/local DLQ/unsubscribe, SSE headers/payloads/non-GET rejection, and message-to-SSE cleanup.
+- Commands run:
+  - `gofmt -w framework_api_test.go cron_message_sse_behavior_test.go`
+  - `GOCACHE=/tmp/gorig-go-cache GOPROXY=off GOSUMDB=off go test ./... -v` in `test/fixtures/framework-api` — passed; Redis broker integration and persistent cron Redis runtime integration skipped because Redis was not configured/reachable in the current sandbox.
+  - `git -C /Users/doz/Desktop/project/open/gorig log -1 --oneline` — `0af68e8 feat(cronx): add persistent delay tasks`
+  - `node --check commands/skill.js` — passed
+  - `node --test test/skill-install.test.mjs test/init-project.test.mjs` — 11/11 passed
+  - `python3 /Users/doz/.codex/skills/.system/skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
+  - `npm_config_cache=/tmp/gorig-npm-cache npm pack --dry-run` — scheduled-tasks, messaging, and sse references included; `docs/`, `test/`, and local helper copies excluded
+- Effect verification:
+  - `cronx.AddCronTask` ran a short interval task, duplicate registration was ignored, `AddEveryTask` registration returned without deadlock and the task executed, timeout context was observed, panic recovery did not stop subsequent tasks, delay/once tasks ran, and shutdown completed.
+  - Persistent cron task validation verified anonymous handler rejection, unregistered handler rejection, non-JSON payload rejection, and missing-Redis scheduling error.
+  - Local `messagex` publish/consume, unsubscribe, multi-subscriber fan-out, sequential ordering, retry, local DLQ delivery, and local `ReplayDLQ` unsupported boundary were verified.
+  - SSE GET headers, `SendOK`, `SendError`, non-GET 405 response, message-to-SSE event output, and subscriber cleanup were verified.
+- Known limitations:
+  - Persistent cron task runtime delivery, restart recovery, failure status, and Redis key cleanup require configured Redis infrastructure before runtime behavior can be claimed.
+  - Redis `messagex` publish/consume, ordering, retry, DLQ, and replay require configured Redis infrastructure before runtime behavior can be claimed.
+  - RabbitMQ remains unsupported in the inspected baseline.
+- Follow-up work: Complete Phase 4 Redis integration verification for `messagex` and persistent cron tasks when disposable Redis is available.
+
+### Phase 4 Interaction Update
+
+- Status: in_progress
+- Gorig version(s): local `master` commit `0af68e8`
+- Date: 2026-07-06
+- Implemented:
+  - Added `references/business-scenarios.md` so ordinary business-language requests are decomposed before component selection.
+  - Updated `SKILL.md` to load scenario decomposition before cron/message/SSE/cache/persistence component references when the user does not name framework primitives.
+  - Updated testing guidance to require business-effect verification, not only component-level checks.
+- Commands run:
+  - `python3 /Users/doz/.codex/skills/.system/skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
+  - `node --check commands/skill.js` — passed before the interaction update packaging check
+  - `node --test test/skill-install.test.mjs test/init-project.test.mjs` — 11/11 passed before the interaction update packaging check
+  - `npm_config_cache=/tmp/gorig-npm-cache npm pack --dry-run` — `business-scenarios.md` included
+  - `git diff --check` — passed
+- Effect verification:
+  - The skill now has explicit guidance to map reminders, delayed processing, async notifications, live UI updates, and performance complaints to suitable Gorig capabilities.
+- Known limitations:
+  - Scenario decomposition is instruction-level behavior and should be validated by manual prompt tests in a real project.
+- Follow-up work: Route/Phase 4 remains the next active route. Complete Redis-backed runtime verification for persistent cron tasks and `messagex`, and continue manual prompt checks against `customer-api`.
+
+### Phase 4 Completion
+
+- Status: verified
+- Gorig version(s): local `master` commit `0af68e8`; `customer-api` resolves `github.com/jom-io/gorig v0.0.0` through `replace => ../../gorig`
+- Date: 2026-07-06
+- Implemented:
+  - Completed Phase 4 documentation and routing for scheduled tasks, Redis-backed persistent delay/once tasks, local/Redis `messagex`, SSE, and message-to-SSE composition.
+  - Verified that business-language reminder/notification/live-update requests route through scenario decomposition before selecting cron, messaging, SSE, persistence, or cache components.
+  - Confirmed the final guidance separates durable business facts in MySQL/MongoDB from transient delivery mechanisms such as Redis queues, local message fan-out, and SSE streams.
+  - Confirmed Redis-backed persistent cron tasks and Redis `messagex` runtime behavior in the local framework fixture when Redis is available.
+  - Confirmed a real `customer-api` prompt test resolves the target project's actual Gorig source before producing a business design.
+- Commands run:
+  - `go test ./... -run 'TestCronx|TestMessagex|TestSSE|TestRedisMessage|TestMessageToSSE' -v` in `test/fixtures/framework-api` — passed; Redis persistent cron delivery and Redis `messagex` publish/consume tests ran and passed.
+  - `codex -a never exec --ephemeral --sandbox read-only --skip-git-repo-check -C /Users/doz/Desktop/project/open/gorig-ai-test/customer-api -o /tmp/gorig-route4-codex-result.md -` — passed after running with required local Codex CLI permissions.
+  - `sed -n '1,240p' /tmp/gorig-route4-codex-result.md` — confirmed the recorded final response.
+- Effect verification:
+  - Cron behavior verified short interval execution, duplicate-registration suppression, `AddEveryTask` non-deadlock and execution, timeout cancellation, panic recovery, delay/once execution, shutdown, persistent task validation errors, and Redis-backed persistent delay delivery.
+  - Messaging behavior verified local publish/consume, unsubscribe, multi-subscriber fan-out, sequential ordering, retry, local DLQ delivery, local `ReplayDLQ` unsupported boundary, and Redis publish/consume.
+  - SSE behavior verified GET stream headers, `SendOK`, `SendError`, non-GET 405 output, message-to-SSE event delivery, and subscriber cleanup.
+  - Manual Codex CLI prompt against `customer-api` correctly identified `replace=../../gorig`, inspected the real source, avoided using `customer.status` for VIP state, required database persistence for reminder history, rejected in-memory delay tasks for restart durability, recommended `cronx.AddPersistDelayTask` plus DB compensation scanning, and treated SSE/Redis `messagex` as conditional delivery mechanisms rather than sources of truth.
+- Known limitations:
+  - Redis-backed behavior is verified only when disposable or explicitly configured Redis is available; future project delivery must still report Redis configuration and skipped checks per environment.
+  - Redis `messagex` replay, ordering, retry, and DLQ runtime behavior remain scenario-specific and should be integration-tested when a feature depends on those exact guarantees.
+  - RabbitMQ remains unsupported in the inspected baseline.
+  - `customer-api` is not a Git repository, so clean-worktree confirmation was not available; the Codex CLI validation ran in read-only mode and reported no file modifications.
+- Follow-up work: Begin Phase 5: authentication, security, and outbound networking.
+
+### Phase 5 Completion
+
+- Status: verified
+- Gorig version(s): local `master` commit `4dcf601`; Redis token manager implemented in current source line and expected in releases that include it, such as planned `v0.0.53+`
+- Date: 2026-07-06
+- Implemented:
+  - Added `references/auth-security.md` for business-language login/logout, protected routes, token generation/parse/record/refresh/revoke, user context, role/attribute filters, forbidden cases, CORS, debounce, request-signature boundary, secret configuration, and sensitive logging rules.
+  - Added `references/outbound-http.md` for GET, form, JSON, XML, headers, context/header propagation, timeout, bad response handling, malformed payloads, and controlled image fetching.
+  - Routed authentication/security and outbound networking requests from `SKILL.md` to the dedicated references plus framework/testing references.
+  - Updated business-scenario decomposition with identity/security and outbound dependency dimensions so ordinary business prompts can be tested without framework vocabulary.
+  - Updated capability matrix, onboarding files, source map, and testing guidance for Phase 5.
+  - Extended the framework compile fixture with token middleware and outbound helper coverage.
+  - Added local behavior tests for memory token middleware, missing/malformed/expired/refreshed/revoked/forbidden token cases, user and trace context propagation, CORS preflight, debounce whitelist/rate-limit behavior, and outbound helpers against `httptest.Server`.
+  - Documented discovered security boundaries: local `master` commit `4dcf601` has Redis token manager plus real Redis integration tests; the tests pass with Redis configured and skip only when Redis is absent. Memory token `Destroy` logs raw token and does not force immediate `tokens.json` rewrite.
+- Commands run:
+  - `node --check commands/skill.js` — passed
+  - `node --test test/skill-install.test.mjs` — 6/6 passed
+  - `gofmt -w test/fixtures/framework-api/framework_api_test.go test/fixtures/framework-api/auth_security_outbound_behavior_test.go test/fixtures/framework-api/cron_message_sse_behavior_test.go`
+  - `go test ./... -v` in `test/fixtures/framework-api` — passed
+  - `go test ./test -run TestRedisTokenManager -v` in local Gorig `master` — passed with configured Redis; covered generate/reuse/clean/refresh/destroy/effective behavior
+  - `python3 /Users/doz/.codex/skills/.system/skill-creator/scripts/quick_validate.py templates/skills/gorig-backend` — valid
+  - `rg --pcre2 ... templates/skills/gorig-backend test/fixtures/framework-api` — broad scan produced documentation-only false positives; narrow real-secret pattern scan returned no matches
+  - `npm_config_cache=/tmp/gorig-npm-cache npm pack --dry-run --json` — `auth-security.md` and `outbound-http.md` included
+  - Installed the skill to `~/Desktop/project/open/gorig-ai-test.agents/skills/gorig-backend-local` and verified `diff -qr` against the source template had no differences
+- Effect verification:
+  - Memory token protected route succeeds with valid token and exposes user id/userInfo from middleware.
+  - Missing token, short malformed token, malformed auth scheme, destroyed token, forbidden role, expired-token `IsNotExpired`/`IsEffective`, old refresh token, and new refresh token behaviors were tested.
+  - Middleware user context and trace context were verified in gin context and request context.
+  - CORS `OPTIONS` preflight returned 204 with origin and allowed headers; debounce returned 429 for repeated requests and allowed a whitelisted path.
+  - Outbound GET headers/query, form POST, JSON POST, context `Authorization` forwarding, XML POST/parse, bad status, malformed JSON, timeout, and controlled image fetch were verified against a local server.
+  - Redis token manager integration passed against the configured local Redis on Gorig `master`.
+  - Skill installation target for business testing matches the canonical template content.
+- Known limitations:
+  - Redis token runtime behavior requires the target project to resolve to source containing the Redis manager implementation and the runtime environment to provide Redis configuration. Local `master` commit `4dcf601` has real Redis integration coverage in `test/tokenx_redis_test.go`, and planned `v0.0.53+` releases should be treated as Redis-token capable when they include that source.
+  - Built-in memory token persistence has a `tokens.json` caveat: immediate logout/revocation of the last active token should be verified in the target app, and production hardening may need a framework fix or wrapper.
+  - The inspected memory `Destroy` logs raw token strings; production projects should remove or mask that behavior before handling real credentials.
+  - Request signing remains unsupported as a built-in verified capability; signed callback/API requirements need a custom confirmed security design.
+  - Built-in outbound helpers differ in timeout and status/error semantics; production-grade per-request cancellation may require a custom `http.Client` path after confirmation.
+- Follow-up work: Begin Phase 6: observability, deployment, and operations.
