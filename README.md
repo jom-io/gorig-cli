@@ -1,61 +1,69 @@
-# Gorig CLI
+# Gorig CLI: Project Generator and AI Skill Installer
 
-Gorig CLI is the command-line tool for initializing Gorig projects, generating modules, installing the `gorig-backend` skill, and keeping generated projects aligned with the verified Gorig backend roadmap.
+`gorig-cli` is the command-line entry point for Gorig backend development. It creates runnable Gorig projects, generates feature modules, builds persistence-backed CRUD services, produces API documentation, and installs the `gorig-backend` skill for Codex and Claude.
 
-## Roadmap Status
+Use it when you want generated code to follow the same Gorig structure and framework conventions instead of starting from ad hoc scaffolding.
 
-The `gorig-backend` skill roadmap is tracked in [docs/gorig-backend-skill-roadmap.md](docs/gorig-backend-skill-roadmap.md). This README documents the stable CLI workflows and the currently verified skill surface.
+## What It Does
 
-| Scope | Status |
+| Capability | Description |
 |---|---|
-| Skill foundation, source rules, and version detection | verified |
-| Locally runnable basic project generation | verified |
-| HTTP API, modules, database, cache, cron, messaging, SSE, auth, security, and outbound networking guidance | verified |
-| Observability, deployment, and operations guidance | pending |
+| Project bootstrap | Create a locally runnable Gorig service with `_cmd`, environment configs, domain registration, example routes, and tests. |
+| Module generation | Add flat feature modules under `domain/<module>/` using Router -> Controller -> Service -> Model boundaries. |
+| Persistent CRUD | Generate MySQL or MongoDB CRUD modules backed by Gorig `domainx/dx`, with tests, docs, and non-secret config skeletons. |
+| API documentation | Generate OpenAPI/Redoc documentation for generated HTTP modules. |
+| AI skill installation | Install the bundled `gorig-backend` skill so Codex or Claude can work with Gorig projects using framework-aware rules. |
+| Framework development | Generate projects against a local Gorig checkout with `--gorig-replace` when developing the framework itself. |
 
 ## Installation
 
-Install globally using npm:
-
-```sh
-npm install -g gorig-cli
-```
-
-Or run directly using npx:
+Run without installing globally:
 
 ```sh
 npx gorig-cli@latest <command>
 ```
 
-## Quick Start
-
-### Initialize a Runnable Project
-
-Use the `init` command to create a new project:
+Or install globally:
 
 ```sh
-gorig-cli init my-new-project --gorig-version v0.0.52 --no-start
+npm install -g gorig-cli
+gorig-cli <command>
 ```
 
-Or use npx:
+## Create a New Backend
 
 ```sh
-npx gorig-cli@latest init my-new-project --gorig-version v0.0.52 --no-start
+npx gorig-cli@latest init my-new-project --no-start
 ```
 
-This creates a locally runnable project with `local`, `dev`, and `prod` configuration, one `_cmd` entry point, and a Router-Controller-Service example under `domain/hello`. The basic project does not require MySQL, MongoDB, or Redis.
+Or with a global install:
+
+```sh
+gorig-cli init my-new-project --no-start
+```
+
+The generated project includes:
+
+- one `_cmd` entry point
+- `local`, `dev`, and `prod` configuration
+- `domain/init.go` registration
+- an example `domain/hello` module
+- tests under `test/`
+- no required MySQL, MongoDB, or Redis dependency in the basic profile
 
 Useful automation options:
 
 ```sh
-# Use a custom Go module and base port
 gorig-cli init my-new-project \
   --module example.com/my-new-project \
-  --gorig-version v0.0.52 \
+  --gorig-version latest \
   --port 9527 \
   --no-start
+```
 
-# Framework development against a local Gorig checkout
+For framework development against a local checkout:
+
+```sh
 gorig-cli init my-new-project \
   --gorig-replace ../gorig \
   --no-start \
@@ -64,21 +72,21 @@ gorig-cli init my-new-project \
 
 Use `--force` only when an existing non-empty destination may be replaced. Use `--start` to start immediately; otherwise initialization is non-interactive and does not start the service.
 
-### Create a Basic Module
+## Add a Module
 
-Use the `create` command in the project root directory to create a new module:
-
-```sh
-gorig-cli create user
-```
-
-Or use npx:
+Run from the generated project root:
 
 ```sh
 npx gorig-cli@latest create user
 ```
 
-This creates a flat feature-first module under `domain/user`, using the Gorig Router -> Controller -> Service shape without adding database or Redis requirements:
+Or with a global install:
+
+```sh
+gorig-cli create user
+```
+
+This creates:
 
 ```text
 domain/user/
@@ -90,11 +98,11 @@ domain/user/
     └── user.go
 ```
 
-The generated routes are `GET /user/info` and `POST /user/echo`. More complex persistence-backed CRUD modules should keep the same flat module boundary and add `domainx/dx` access in `service.go` plus storage structs under `model/`.
+The generated basic routes are `GET /user/info` and `POST /user/echo`.
 
-### Create a Persistent CRUD Module
+## Generate Persistent CRUD
 
-To generate a persistent CRUD module backed by Gorig `domainx/dx`, choose MySQL or MongoDB explicitly:
+Choose the storage backend explicitly:
 
 ```sh
 # MySQL CRUD module, with HTTP routes enabled by default
@@ -109,11 +117,16 @@ gorig-cli create order --crud --db mysql --no-http
 
 Persistent CRUD generation currently supports MySQL and MongoDB. The generated code compiles without a live database, but effect-level create/list/page/update/delete verification requires a matching development database configuration.
 
-The CRUD generator preserves existing named connections and adds non-secret configuration skeletons to `_bin/local.yaml`, `_bin/dev.yaml`, `_bin/prod.yaml`, and `test/_bin/local.yaml`. After filling local values or exporting the documented `GORIG_...` variables, run `go test -tags=integration,mysql ./test/... -v` or `go test -tags=integration,mongo ./test/... -v`.
+The CRUD generator preserves existing named connections and adds non-secret configuration skeletons to `_bin/local.yaml`, `_bin/dev.yaml`, `_bin/prod.yaml`, and `test/_bin/local.yaml`.
 
-### Generate API Documentation
+After filling local values or exporting the documented `GORIG_...` variables, run:
 
-Use the `doc` command to generate OpenAPI documentation:
+```sh
+go test -tags=integration,mysql ./test/... -v
+go test -tags=integration,mongo ./test/... -v
+```
+
+## Generate API Documentation
 
 ```sh
 # Generate documentation for all modules
@@ -130,36 +143,30 @@ npx gorig-cli@latest doc
 npx gorig-cli@latest doc user
 ```
 
-After generating the documentation, you can access it through:
+After generating documentation, access it through:
+
+```text
 http://127.0.0.1:8080/redoc.html
+```
 
-### Install Gorig Skill
+## Install Gorig Backend Skill
 
-Use the `skill` command to install the bundled `gorig-backend` skill for Codex or Claude.
-
-Install the Codex skill globally:
+The CLI bundles the `gorig-backend` skill for Codex and Claude. Install it when you want AI agents to implement, review, test, or troubleshoot Gorig projects with framework-aware rules.
 
 ```sh
+# Codex global skill
 gorig-cli skill install codex
-```
 
-Install both Codex and Claude skills globally:
-
-```sh
+# Codex and Claude global skills
 gorig-cli skill install all
-```
 
-Install the Codex skill into the current repository:
-
-```sh
+# Codex skill stored in the current repository
 gorig-cli skill install codex project
 ```
 
 The install scope defaults to `user`. Use `project` only when the skill should be stored in the current repository.
 
-### Use with AI Agents
-
-After installing the skill, open a Gorig project in Codex or Claude and ask for framework-specific backend work:
+Example prompts:
 
 ```text
 Use the gorig-backend skill to add a MySQL order CRUD module with tests and API docs.
@@ -173,9 +180,7 @@ Use the gorig-backend skill to review startup, routing, config, and middleware u
 Use the gorig-backend skill to add login, protected routes, logout, and security tests.
 ```
 
-### Run the Project
-
-After entering the project directory, you can run the project using the following commands:
+## Run the Project
 
 ```sh
 cd my-new-project
@@ -185,21 +190,13 @@ GORIG_SYS_MODE=local go run ./_cmd
 Or run it after building:
 
 ```sh
-go build -o my-new-project _cmd/main.go && ./my-new-project
+go build -o my-new-project _cmd/main.go
+GORIG_SYS_MODE=local ./my-new-project
 ```
 
-## Verified Capabilities
+## Verification Notes
 
-- Dependency-free project bootstrap with `local`, `dev`, and `prod` configuration.
-- Flat feature-first module generation under `domain/<module>/`.
-- MySQL and MongoDB CRUD generation through Gorig `domainx/dx`.
-- API documentation generation for generated HTTP modules.
-- Skill installation for Codex and Claude from one canonical bundled source.
-- Skill references and fixtures for cache, scheduled tasks, messaging, SSE, authentication, security, and outbound networking.
-
-## Current Boundaries
-
-- Persistent CRUD generation is verified for MySQL and MongoDB.
-- Runtime verification for MySQL, MongoDB, and Redis requires configured development infrastructure.
-- Observability, deployment, and operations guidance is the next roadmap phase.
-- Real remote deployment or production mutation requires explicit user authorization.
+- Basic project generation is dependency-light and should build without MySQL, MongoDB, or Redis.
+- Persistent CRUD is generated for MySQL and MongoDB.
+- Database and Redis behavior should be verified against configured development infrastructure.
+- Remote deployment or production mutation should be performed only after explicit authorization.

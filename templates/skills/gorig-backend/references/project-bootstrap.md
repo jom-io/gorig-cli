@@ -7,7 +7,7 @@ Use this workflow when creating a new locally runnable Gorig backend.
 Confirm or infer safely:
 
 - Project directory and Go module name.
-- Gorig version: preserve a requested version; otherwise use the selected stable version and report the resolution.
+- Gorig version: preserve a requested version; otherwise use `latest` and report the resolution.
 - Whether an existing non-empty directory may be replaced. Never pass `--force` without explicit authorization.
 - Local base port.
 - Git initialization is a post-generation skill step. Ask after generation and verification; do not let the CLI initialize Git implicitly.
@@ -27,7 +27,7 @@ When `gorig-cli` is installed:
 ```sh
 gorig-cli init demo-api \
   --module example.com/demo-api \
-  --gorig-version v0.0.52 \
+  --gorig-version latest \
   --port 9527 \
   --no-start \
   --no-git
@@ -38,7 +38,7 @@ Unreleased sibling-checkout validation:
 ```sh
 node ../gorig-cli/bin/cli.js init demo-api \
   --module example.com/demo-api \
-  --gorig-version v0.0.52 \
+  --gorig-version latest \
   --port 9527 \
   --no-start \
   --no-git
