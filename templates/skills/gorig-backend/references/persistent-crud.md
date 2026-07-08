@@ -194,6 +194,8 @@ Controllers must:
 - Return through `apix.HandleData` with the project's established business code shape.
 - Keep transport logic only; call service functions for business behavior.
 
+Model note: `dx.On[T].Complex()` embeds `domainx.Options`; do not add generic `CreatedAt`, `UpdatedAt`, or `DeletedAt` fields to `T`. Keep only business-specific timestamps in `T`, and map audit timestamps from `*domainx.Complex[T]` when a response DTO needs them.
+
 ## MySQL Model Pattern
 
 Use MySQL when the user chooses MySQL or the project clearly uses MySQL for similar modules.
