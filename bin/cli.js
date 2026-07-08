@@ -1,22 +1,56 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
+import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Get command line arguments
 const args = process.argv.slice(2);
 
+// Get current file directory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const availableCommands = 'create, init, doc, skill';
+
+const printUsage = () => {
+  console.log(`Usage: gorig-cli <command> [options]
+
+Commands:
+  init    Initialize a new Gorig project
+  create  Create a module in an existing Gorig project
+  doc     Generate API documentation
+  skill   Install the bundled gorig-backend skill
+
+Options:
+  -h, --help     Show this help
+  -v, --version  Show gorig-cli version`);
+};
+
+const readPackageVersion = () => {
+  const packagePath = path.join(__dirname, '../package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+  return packageJson.version;
+};
+
 // Validate if a command is provided
 if (args.length < 1) {
-  console.error(chalk.red('Please provide a valid command, e.g.: create, init, doc, or skill'));
+  console.error(chalk.red(`Please provide a valid command, e.g.: ${availableCommands}`));
   process.exit(1);
 }
 
 // Extract command
 const command = args[0];
 
-// Get current file directory
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+if (command === '--version' || command === '-v' || command === 'version') {
+  console.log(readPackageVersion());
+  process.exit(0);
+}
+
+if (command === '--help' || command === '-h' || command === 'help') {
+  printUsage();
+  process.exit(0);
+}
 
 // Execute different logic based on command
 switch (command) {
@@ -59,6 +93,6 @@ switch (command) {
 
   default:
     console.error(chalk.red(`Unknown command: ${command}`));
-    console.error(chalk.yellow('Available commands: create, init, doc, skill'));
+    console.error(chalk.yellow(`Available commands: ${availableCommands}`));
     process.exit(1);
 }

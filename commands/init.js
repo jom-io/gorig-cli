@@ -340,6 +340,11 @@ export const initProject = async (options, runtime = {}) => {
 };
 
 const initModule = async (args) => {
+  if (args.length === 1 && ['--help', '-h', 'help'].includes(args[0])) {
+    printUsage();
+    return 0;
+  }
+
   try {
     const options = parseInitArgs(args);
     await initProject(options);

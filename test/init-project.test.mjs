@@ -11,6 +11,22 @@ import { parseInitArgs } from '../commands/init.js';
 const cliPath = path.resolve('bin/cli.js');
 const localGorig = path.resolve('..', 'gorig');
 
+test('CLI reports version and help for automation probes', () => {
+  const version = spawnSync(process.execPath, [cliPath, '--version'], { encoding: 'utf8' });
+  assert.equal(version.status, 0, version.stderr);
+  assert.match(version.stdout.trim(), /^\d+\.\d+\.\d+$/);
+
+  const help = spawnSync(process.execPath, [cliPath, '--help'], { encoding: 'utf8' });
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /Usage: gorig-cli <command>/);
+  assert.match(help.stdout, /create, init, doc, skill|Commands:/);
+
+  const initHelp = spawnSync(process.execPath, [cliPath, 'init', '--help'], { encoding: 'utf8' });
+  assert.equal(initHelp.status, 0, initHelp.stderr);
+  assert.match(initHelp.stdout, /Usage: gorig-cli init <project-name>/);
+  assert.equal(initHelp.stderr, '');
+});
+
 test('parseInitArgs returns deterministic defaults', () => {
   assert.deepEqual(parseInitArgs(['demo-api']), {
     projectName: 'demo-api',
